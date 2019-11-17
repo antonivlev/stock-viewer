@@ -4,12 +4,34 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
+
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
+
+var database *gorm.DB
+
+type Search struct {
+	SearchTime time.Time
+	Symbol     string
+}
 
 func main() {
 	http.Handle("/", http.FileServer(http.Dir("./static")))
 	// api
 	http.HandleFunc("/api/get-stock-data", getStockData)
+	http.HandleFunc("/api/save-search", saveSearch)
+
+	// db setup
+	db, errDb := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=stockapp password=12345 sslmode=disable")
+	if errDb != nil {
+		fmt.Println(errDb.Error())
+	}
+	database = db
+	// create table for searches
+	db.AutoMigrate(&Search{})
+	defer db.Close()
 
 	fmt.Println("Serving on :3000")
 	http.ListenAndServe(":3000", nil)
@@ -54,4 +76,21 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(stockDataBytes)
+}
+
+func saveSearch(w http.ResponseWriter, r *http.Request) {
+	var search Search
+	errDecode := json.NewDecoder(r.Body).Decode(&search)
+	// if could not parse response
+	if errDecode != nil {
+		fmt.Fprintf(w, "Error parsing request body:\n %s", errDecode.Error())
+		return
+	}
+
+	// TODO: not nice
+	if database != nil {
+		database.Save(search)
+	} else {
+		fmt.Fprintf(w, "Could not save search to db: check db connection")
+	}
 }
