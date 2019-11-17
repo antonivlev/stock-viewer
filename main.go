@@ -4,34 +4,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"time"
 
-	"github.com/jinzhu/gorm"
+	"github.com/antonivlev/stock-viewer/database"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
-var database *gorm.DB
-
-type Search struct {
-	SearchTime time.Time
-	Symbol     string
-}
-
 func main() {
+	errDb := database.SetupDatabase()
+	if errDb != nil {
+		fmt.Printf("Error connecting to database: \n%s\n", errDb.Error())
+	}
+
+	// serve the main html file
 	http.Handle("/", http.FileServer(http.Dir("./static")))
-	// api
+	// api, frontend calls these for data
 	http.HandleFunc("/api/get-stock-data", getStockData)
 	http.HandleFunc("/api/save-search", saveSearch)
-
-	// db setup
-	db, errDb := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=stockapp password=12345 sslmode=disable")
-	if errDb != nil {
-		fmt.Println(errDb.Error())
-	}
-	database = db
-	// create table for searches
-	db.AutoMigrate(&Search{})
-	defer db.Close()
+	http.HandleFunc("/api/get-searches", getSearches)
 
 	fmt.Println("Serving on :3000")
 	http.ListenAndServe(":3000", nil)
@@ -53,6 +42,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 	}
 	defer resp.Body.Close()
 
+	// parse response
 	var stockData map[string]interface{}
 	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
 	// if could not parse response
@@ -66,9 +56,9 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Alpha Vantage API returned an error. Is your stock symbol valid? \n %s", errAPI)
 		return
 	}
+	// extract stock data from response, save back to json
 	// TODO: might need to handle access error here, check apha vantage api guarantees
 	datesMap := stockData["Time Series (Daily)"]
-
 	stockDataBytes, errMarshal := json.Marshal(datesMap)
 	if errMarshal != nil {
 		fmt.Fprintf(w, "Error encoding stock data:\n %s", errMarshal.Error())
@@ -79,7 +69,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveSearch(w http.ResponseWriter, r *http.Request) {
-	var search Search
+	var search database.Search
 	errDecode := json.NewDecoder(r.Body).Decode(&search)
 	// if could not parse response
 	if errDecode != nil {
@@ -87,10 +77,24 @@ func saveSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: not nice
-	if database != nil {
-		database.Save(search)
-	} else {
-		fmt.Fprintf(w, "Could not save search to db: check db connection")
+	errSave := database.SaveSearch(search)
+	if errSave != nil {
+		fmt.Fprintf(w, "Error saving to database: \n %v", errSave.Error())
 	}
+}
+
+func getSearches(w http.ResponseWriter, r *http.Request) {
+	searches, errRead := database.GetSearches()
+	if errRead != nil {
+		fmt.Fprintf(w, "Error reading from database: \n %v", errRead.Error())
+		return
+	}
+
+	searchesBytes, errMarshal := json.Marshal(searches)
+	if errMarshal != nil {
+		fmt.Fprintf(w, "Error encoding data from db:\n %s", errMarshal.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(searchesBytes)
 }
