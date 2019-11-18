@@ -1,2 +1,40 @@
-<head></head>
-<body>im a page</body>
+<head>
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <script src="plotly-latest.min.js"></script>
+</head>
+<body>
+    <div class="app">
+        <div class="symbol-entry-area">
+            <h3>Enter stock symbol</h3>
+            <input id="symbol-input"></input>
+            <button id="send-symbol">See graph</button>
+        </div>
+        <div class="error-msg">hey</div>
+        <div id="plotly-div" class="graph"></div>
+        <table class="successful-searches">
+            <thead>
+                <tr>
+                    <th colspan="5">Successful searches</th>
+                </tr>
+                <tr>
+                    <th colspan="1">Date</th>
+                    <th colspan="4">Current data</th>                    
+                </tr>
+                <tr>
+                    <th></th>
+                    <th>open</th>
+                    <th>high</th>
+                    <th>low</th>
+                    <th>close</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <script type="text/javascript" src="main.js"></script>
+</body>
