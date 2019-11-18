@@ -27,6 +27,7 @@ func main() {
 }
 
 func getStockData(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.String())
 	// parse stock symbol
 	keys, ok := r.URL.Query()["symbol"]
 	if !ok {
