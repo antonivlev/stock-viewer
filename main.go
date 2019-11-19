@@ -95,6 +95,21 @@ func getSearches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// fetch and add current stock data to every search in db
+	// TODO: change, very inefficient. Use getLatestStockData from client
+	// type searchWithData struct {
+	// 	database.Search
+	// 	latestData
+	// }
+	// var infoSearches []searchWithData
+	// for _, s := range searches {
+	// 	latest, _ := getLatestStockData(s.Stock)
+	// 	infoSearches = append(
+	// 		infoSearches,
+	// 		searchWithData{s, latest},
+	// 	)
+	// }
+
 	searchesBytes, errMarshal := json.Marshal(searches)
 	if errMarshal != nil {
 		fmt.Fprintf(w, "Error encoding data from db:\n %s", errMarshal.Error())
@@ -102,4 +117,34 @@ func getSearches(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(searchesBytes)
+}
+
+type latestData struct {
+	Open   string `json:"02. open"`
+	High   string `json:"03. high"`
+	Low    string `json:"04. low"`
+	Close  string `json:"08. previous close"`
+	Volume string `json:"06. volume"`
+}
+
+func getLatestStockData(stock string) (latestData, error) {
+	// make request to alpha vantage
+	resp, errGet := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + stock + "&apikey=88ABYOD45M3WPBO4")
+	if errGet != nil {
+		return latestData{}, errGet
+	}
+	defer resp.Body.Close()
+	// parse response
+	var stockData struct {
+		GlobalQuote latestData `json:"Global Quote"`
+	}
+	//var stockData map[string]interface{}
+	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
+	// if could not parse response
+	if errDecode != nil {
+		return latestData{}, errDecode
+	}
+	// TODO: error in reponse not handled
+
+	return stockData.GlobalQuote, nil
 }
