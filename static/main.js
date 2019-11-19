@@ -44,19 +44,27 @@ function fillInTable(searchList) {
     document.querySelector("tbody").innerHTML = "";
     searchList.map((search) => {
         let {SearchTime, Stock} = search;
-        console.log(search);
+        Stock = Stock.toUpperCase()
         document.querySelector("tbody").insertAdjacentHTML(
             "afterbegin", 
-            `<tr>
+            `<tr class="stock-row">
                 <td>${SearchTime}</td>
-                <td>${Stock}</td>
-                <td>${"open"}</td>
-                <td>${"high"}</td>
-                <td>${"low"}</td>
-                <td>${"close"}</td>
-                <td>${"volume"}</td>
+                <td class="stock-name">${Stock}</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>`
         );
+    })
+    updateCurrentStockValues();
+}
+
+function updateCurrentStockValues() {
+    document.querySelectorAll(".stock-row").forEach(row => {
+        let stock = row.querySelector(".stock-name").innerText;
+        // fetch and fill in values for this row
     })
 }
 
@@ -122,6 +130,7 @@ function plotData(datesMap) {
 }
 
 function showError(errorString) {
-    console.log(errorString);
+    let errorDiv = document.querySelector(".error-msg");
+    errorDiv.innerText = errorString;
 }
 
