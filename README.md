@@ -3,11 +3,12 @@
 Requires Go and Postgres
 
 To run:
-1. Create database with the following details:
+1. Create a postgres database with the following details:
 ```host=localhost port=5432 user=postgres dbname=stockapp password=12345```
 2. ```bash
-    $ git clone https://github.com/antonivlev/stock-viewer.git
-    $ cd stock-viewer
+    $ go get github.com/antonivlev/stock-viewer
+    $ cd ~/go/src/github.com/antonivlev/stock-viewer/
+    $ go get
     $ go run main.go
     ```
 
