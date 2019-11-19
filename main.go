@@ -70,6 +70,8 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveSearch(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.String())
+
 	var search database.Search
 	errDecode := json.NewDecoder(r.Body).Decode(&search)
 	// if could not parse response
@@ -85,6 +87,8 @@ func saveSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSearches(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.String())
+
 	searches, errRead := database.GetSearches()
 	if errRead != nil {
 		fmt.Fprintf(w, "Error reading from database: \n %v", errRead.Error())

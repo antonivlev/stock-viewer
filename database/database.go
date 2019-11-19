@@ -15,7 +15,7 @@ var gormDB *gorm.DB
 
 type Search struct {
 	SearchTime time.Time
-	Symbol     string
+	Stock     string
 }
 
 // Connects the database
