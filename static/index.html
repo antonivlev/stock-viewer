@@ -4,35 +4,29 @@
 </head>
 <body>
     <div class="app">
+        <!-- stock entry-->
         <div class="symbol-entry-area">
             <h3>Enter stock symbol</h3>
             <input id="symbol-input"></input>
             <button id="send-symbol">See graph</button>
         </div>
         <div class="error-msg">hey</div>
+        <!-- graph -->
         <div id="plotly-div" class="graph"></div>
+        <!-- searches table -->
         <table class="successful-searches">
             <thead>
                 <tr>
-                    <th colspan="5">Successful searches</th>
-                </tr>
-                <tr>
-                    <th colspan="1">Date</th>
-                    <th colspan="4">Current data</th>                    
-                </tr>
-                <tr>
-                    <th></th>
-                    <th>open</th>
-                    <th>high</th>
-                    <th>low</th>
-                    <th>close</th>
+                    <td>search time</td>
+                    <td>stock</td>
+                    <td>open</td>
+                    <td>high</td>
+                    <td>low</td>
+                    <td>close</td>
+                    <td>volume</td>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td></td>
-                    <td></td>
-                </tr>
             </tbody>
         </table>
     </div>

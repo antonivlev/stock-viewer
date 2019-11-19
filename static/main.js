@@ -1,3 +1,5 @@
+updateSearchTable();
+
 document.querySelector("#send-symbol").onclick = () => {
     let stock = document.querySelector("#symbol-input").value
     
@@ -10,9 +12,10 @@ document.querySelector("#send-symbol").onclick = () => {
                 // all good
                 res.json()
                     .then(jsonData => {
-                        console.log("parsed json")
-                        //saveSearch()
-                        plotData(jsonData)
+                        console.log("parsed json");
+                        plotData(jsonData);
+                        let now = new Date().toJSON();
+                        saveSearch(now, stock).then(updateSearchTable);
                     })
                     .catch(jsonError => showError("json parse error: \n"+jsonError));
             } else {
@@ -20,6 +23,54 @@ document.querySelector("#send-symbol").onclick = () => {
                 res.text().then(parsedText => showError(parsedText))
             }
         })
+}
+
+function updateSearchTable() {
+    fetch("http://localhost:3000/api/get-searches").then(res => {
+        // TODO: need better way of checking if response contains an error
+        if (res.headers.get("Content-Type") === "application/json") {
+            // all good
+            res.json()
+                .then(jsonData => fillInTable(jsonData))
+                .catch(jsonError => showError("json parse error: \n"+jsonError));
+        } else {
+            // server returned error
+            res.text().then(parsedText => showError(parsedText))
+        }
+    })
+}
+
+function fillInTable(searchList) {
+    document.querySelector("tbody").innerHTML = "";
+    searchList.map((search) => {
+        let {SearchTime, Stock} = search;
+        console.log(search);
+        document.querySelector("tbody").insertAdjacentHTML(
+            "afterbegin", 
+            `<tr>
+                <td>${SearchTime}</td>
+                <td>${Stock}</td>
+                <td>${"open"}</td>
+                <td>${"high"}</td>
+                <td>${"low"}</td>
+                <td>${"close"}</td>
+                <td>${"volume"}</td>
+            </tr>`
+        );
+    })
+}
+
+// TODO handle errors
+function saveSearch(time, stock) {
+    return fetch("http://localhost:3000/api/save-search", 
+        {
+            method: "POST", 
+            body: JSON.stringify({
+                "searchTime": time,
+                "stock": stock,
+            })
+        }
+    )
 }
 
 function plotData(datesMap) {
