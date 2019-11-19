@@ -10,3 +10,5 @@ To run:
     $ cd stock-viewer
     $ go run main.go
     ```
+
+Server API documentation: https://documenter.getpostman.com/view/6354074/SW7Z4UZo?version=latest
