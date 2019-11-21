@@ -136,7 +136,6 @@ func getLatestStockData(w http.ResponseWriter, r *http.Request) {
 	var stockData struct {
 		GlobalQuote latestData `json:"Global Quote"`
 	}
-	//var stockData map[string]interface{}
 	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
 	// if could not parse response
 	if errDecode != nil {
@@ -149,6 +148,7 @@ func getLatestStockData(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w, "Error encoding stock data:\n %s", errMarshal.Error())
 		return
 	}
+	fmt.Printf("%+v\n", stockData.GlobalQuote)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(stockDataBytes)
 }

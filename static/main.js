@@ -4,6 +4,7 @@ document.querySelector("#send-symbol").onclick = () => {
     let stock = document.querySelector("#symbol-input").value
     
     console.log("sending request")
+
     fetch("http://localhost:3000/api/get-stock-data?symbol="+stock)
         .then(res => {
             console.log("got response")
@@ -50,22 +51,44 @@ function fillInTable(searchList) {
             `<tr class="stock-row">
                 <td>${SearchTime}</td>
                 <td class="stock-name">${Stock}</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
+                <td class="open"></td>
+                <td class="high"></td>
+                <td class="low"></td>
+                <td class="close"></td>
+                <td class="volume"></td>
             </tr>`
         );
     })
     updateCurrentStockValues();
 }
 
+// Updates on new searches. Server return empty if frequency too high,
+// needs looking into
 function updateCurrentStockValues() {
     document.querySelectorAll(".stock-row").forEach(row => {
         let stock = row.querySelector(".stock-name").innerText;
         // fetch and fill in values for this row
+        fetch("http://localhost:3000/api/get-latest-stock-data?symbol="+stock).then(res => {
+            // TODO: need better way of checking if response contains an error
+            if (res.headers.get("Content-Type") === "application/json") {
+                // all good
+                res.json()
+                    .then(jsonData => fillInStockRow(row, jsonData))
+                    .catch(jsonError => showError("json parse error: \n"+jsonError));
+            } else {
+                // server returned error
+                res.text().then(parsedText => showError(parsedText))
+            }
+        })
     })
+}
+
+function fillInStockRow(row, stockData) {
+    row.querySelector(".open").innerText = stockData["02. open"];
+    row.querySelector(".high").innerText = stockData["03. high"];
+    row.querySelector(".low").innerText = stockData["04. low"];
+    row.querySelector(".close").innerText = stockData["08. previous close"];
+    row.querySelector(".volume").innerText = stockData["06. volume"];    
 }
 
 // TODO handle errors
