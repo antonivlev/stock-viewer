@@ -21,6 +21,7 @@ func main() {
 	http.HandleFunc("/api/get-stock-data", getStockData)
 	http.HandleFunc("/api/save-search", saveSearch)
 	http.HandleFunc("/api/get-searches", getSearches)
+	http.HandleFunc("/api/get-latest-stock-data", getLatestStockData)
 
 	fmt.Println("Serving on :3000")
 	http.ListenAndServe(":3000", nil)
@@ -95,21 +96,6 @@ func getSearches(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// fetch and add current stock data to every search in db
-	// TODO: change, very inefficient. Use getLatestStockData from client
-	// type searchWithData struct {
-	// 	database.Search
-	// 	latestData
-	// }
-	// var infoSearches []searchWithData
-	// for _, s := range searches {
-	// 	latest, _ := getLatestStockData(s.Stock)
-	// 	infoSearches = append(
-	// 		infoSearches,
-	// 		searchWithData{s, latest},
-	// 	)
-	// }
-
 	searchesBytes, errMarshal := json.Marshal(searches)
 	if errMarshal != nil {
 		fmt.Fprintf(w, "Error encoding data from db:\n %s", errMarshal.Error())
@@ -127,11 +113,23 @@ type latestData struct {
 	Volume string `json:"06. volume"`
 }
 
-func getLatestStockData(stock string) (latestData, error) {
+// TODO: very simillar to getStockData, these two should share functions; e.g. response parsing
+// Error handling thought: this function will only be called with a correct "symbol" parameter; because it is called programmatically
+// from the successful searches table. No need to handle bad parameter? Can this guarantee be explicit?
+func getLatestStockData(w http.ResponseWriter, r *http.Request) {
+	fmt.Println(r.URL.String())
+	// parse stock symbol
+	keys, ok := r.URL.Query()["symbol"]
+	if !ok {
+		fmt.Fprintf(w, "No stock symbol supplied")
+		return
+	}
+
 	// make request to alpha vantage
-	resp, errGet := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + stock + "&apikey=88ABYOD45M3WPBO4")
+	resp, errGet := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + keys[0] + "&apikey=88ABYOD45M3WPBO4")
 	if errGet != nil {
-		return latestData{}, errGet
+		fmt.Fprintf(w, errGet.Error())
+		return
 	}
 	defer resp.Body.Close()
 	// parse response
@@ -142,9 +140,15 @@ func getLatestStockData(stock string) (latestData, error) {
 	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
 	// if could not parse response
 	if errDecode != nil {
-		return latestData{}, errDecode
+		fmt.Fprintf(w, errDecode.Error())
+		return
 	}
 	// TODO: error in reponse not handled
-
-	return stockData.GlobalQuote, nil
+	stockDataBytes, errMarshal := json.Marshal(stockData.GlobalQuote)
+	if errMarshal != nil {
+		fmt.Fprintf(w, "Error encoding stock data:\n %s", errMarshal.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(stockDataBytes)
 }
