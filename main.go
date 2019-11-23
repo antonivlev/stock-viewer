@@ -67,6 +67,9 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 		apihelpers.WriteError(w, "Error encoding stock data", errMarshal)
 		return
 	}
+	// save stock data to db here
+	//
+	//
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(stockDataBytes)
 }

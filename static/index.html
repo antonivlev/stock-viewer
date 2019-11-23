@@ -7,6 +7,7 @@
         <!-- stock entry-->
         <div class="symbol-entry-area">
             <h3>Enter stock symbol</h3>
+            <p>The graph will show daily data, from last 100 days until today</p>
             <input id="symbol-input"></input>
             <button id="send-symbol">See graph</button>
         </div>
@@ -14,22 +15,25 @@
         <!-- graph -->
         <div id="plotly-div" class="graph"></div>
         <!-- searches table -->
-        <button class="update-current-values">Update current values</button>
-        <table class="successful-searches">
-            <thead>
-                <tr>
-                    <td>search time</td>
-                    <td>stock</td>
-                    <td>open</td>
-                    <td>high</td>
-                    <td>low</td>
-                    <td>close</td>
-                    <td>volume</td>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
+        <div class="successful-searches">
+            <p>To limit alpha vantage api call frequency, update each stock's current data here.</p>
+            <button class="update-current-values">Update current values</button>
+            <table>
+                <thead>
+                    <tr>
+                        <td>search time</td>
+                        <td>stock</td>
+                        <td>open</td>
+                        <td>high</td>
+                        <td>low</td>
+                        <td>close</td>
+                        <td>volume</td>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
     </div>
     <script type="text/javascript" src="main.js"></script>
 </body>

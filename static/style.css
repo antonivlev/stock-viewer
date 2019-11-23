@@ -19,21 +19,22 @@ body * {
     grid-column-start: 2;
 }
 
-.successful-searches {
-    grid-column-start: 2;
-}
-
 .error-msg {
-    margin-top: 50px;
     margin-bottom: 50px;
     grid-column-start: 2;
     height: 50px;
-    /* visibility: hidden; */
     background-color: lightpink;
+}
+
+.successful-searches {
+    margin-top: 50px;
+    grid-column-start: 2;
 }
 
 .update-current-values {
     width: 100px;
-    margin-top: 50px;
-    grid-column-start: 2;
+}
+
+.successful-searches tbody tr:hover {
+    background-color: lightgray;
 }
