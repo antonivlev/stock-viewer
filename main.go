@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/antonivlev/stock-viewer/database"
@@ -23,23 +24,32 @@ func main() {
 	http.HandleFunc("/api/get-searches", getSearches)
 	http.HandleFunc("/api/get-latest-stock-data", getLatestStockData)
 
-	fmt.Println("Serving on :3000")
+	fmt.Println("Serving on localhost:3000")
 	http.ListenAndServe(":3000", nil)
 }
 
+// Writes message, error text and Bad Request code. If err is nil, just writes message.
+func writeError(w http.ResponseWriter, message string, err error) {
+	errString := ""
+	if err != nil {
+		errString = err.Error()
+	}
+	http.Error(w, message+"\n\n"+errString, http.StatusBadRequest)
+}
+
 func getStockData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.String())
+	log.Println(r.URL.String())
 	// parse stock symbol
 	keys, ok := r.URL.Query()["symbol"]
 	if !ok {
-		fmt.Fprintf(w, "No stock symbol supplied")
+		writeError(w, "No stock symbol supplied", nil)
 		return
 	}
 
 	// make request to alpha vantage
 	resp, errGet := http.Get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + keys[0] + "&apikey=88ABYOD45M3WPBO4")
 	if errGet != nil {
-		fmt.Fprintf(w, "Error accessing alpha vantage api:\n %s", errGet.Error())
+		writeError(w, "Error accessing alpha vantage api", errGet)
 		return
 	}
 	defer resp.Body.Close()
@@ -49,13 +59,13 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
 	// if could not parse response
 	if errDecode != nil {
-		fmt.Fprintf(w, "Error parsing stock data response:\n %s", errDecode.Error())
+		writeError(w, "Error parsing stock data response", errDecode)
 		return
 	}
 	// if response contains error (e.g. wrong stock symbol)
-	errAPI, hasError := stockData["Error Message"].(string)
+	errAPIText, hasError := stockData["Error Message"].(string)
 	if hasError {
-		fmt.Fprintf(w, "Alpha Vantage API returned an error. Is your stock symbol valid? \n %s", errAPI)
+		writeError(w, "Alpha Vantage API returned an error. Is your stock symbol valid?"+errAPIText, nil)
 		return
 	}
 	// extract stock data from response, save back to json
@@ -63,7 +73,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 	datesMap := stockData["Time Series (Daily)"]
 	stockDataBytes, errMarshal := json.Marshal(datesMap)
 	if errMarshal != nil {
-		fmt.Fprintf(w, "Error encoding stock data:\n %s", errMarshal.Error())
+		writeError(w, "Error encoding stock data", errMarshal)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -71,34 +81,34 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveSearch(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.String())
+	log.Println(r.URL.String())
 
 	var search database.Search
 	errDecode := json.NewDecoder(r.Body).Decode(&search)
 	// if could not parse response
 	if errDecode != nil {
-		fmt.Fprintf(w, "Error parsing request body:\n %s", errDecode.Error())
+		writeError(w, "Error parsing request body", errDecode)
 		return
 	}
 
 	errSave := database.SaveSearch(search)
 	if errSave != nil {
-		fmt.Fprintf(w, "Error saving to database: \n %v", errSave.Error())
+		writeError(w, "Error saving to database", errSave)
 	}
 }
 
 func getSearches(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.String())
+	log.Println(r.URL.String())
 
 	searches, errRead := database.GetSearches()
 	if errRead != nil {
-		fmt.Fprintf(w, "Error reading from database: \n %v", errRead.Error())
+		writeError(w, "Error reading from database", errRead)
 		return
 	}
 
 	searchesBytes, errMarshal := json.Marshal(searches)
 	if errMarshal != nil {
-		fmt.Fprintf(w, "Error encoding data from db:\n %s", errMarshal.Error())
+		writeError(w, "Error encoding data from db", errMarshal)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -117,18 +127,18 @@ type latestData struct {
 // Error handling thought: this function will only be called with a correct "symbol" parameter; because it is called programmatically
 // from the successful searches table. No need to handle bad parameter? Can this guarantee be explicit?
 func getLatestStockData(w http.ResponseWriter, r *http.Request) {
-	fmt.Println(r.URL.String())
+	log.Println(r.URL.String())
 	// parse stock symbol
 	keys, ok := r.URL.Query()["symbol"]
 	if !ok {
-		fmt.Fprintf(w, "No stock symbol supplied")
+		writeError(w, "No stock symbol supplied", nil)
 		return
 	}
 
 	// make request to alpha vantage
 	resp, errGet := http.Get("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=" + keys[0] + "&apikey=88ABYOD45M3WPBO4")
 	if errGet != nil {
-		fmt.Fprintf(w, errGet.Error())
+		writeError(w, "", errGet)
 		return
 	}
 	defer resp.Body.Close()
@@ -139,13 +149,13 @@ func getLatestStockData(w http.ResponseWriter, r *http.Request) {
 	errDecode := json.NewDecoder(resp.Body).Decode(&stockData)
 	// if could not parse response
 	if errDecode != nil {
-		fmt.Fprintf(w, errDecode.Error())
+		writeError(w, "", errDecode)
 		return
 	}
 	// TODO: error in reponse not handled
 	stockDataBytes, errMarshal := json.Marshal(stockData.GlobalQuote)
 	if errMarshal != nil {
-		fmt.Fprintf(w, "Error encoding stock data:\n %s", errMarshal.Error())
+		writeError(w, "Error encoding stock data", errMarshal)
 		return
 	}
 	fmt.Printf("%+v\n", stockData.GlobalQuote)
