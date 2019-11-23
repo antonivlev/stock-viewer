@@ -1,10 +1,10 @@
 body * {
-    border: 1px dotted grey; 
+    border: 1px dotted grey;
 }
 
 .app {
     display: grid;
-    grid-template-columns: 20% 60% 20%;  
+    grid-template-columns: 20% 60% 20%;
 }
 
 .symbol-entry-area {
@@ -20,7 +20,6 @@ body * {
 }
 
 .successful-searches {
-    margin-top: 50px;
     grid-column-start: 2;
 }
 
@@ -31,4 +30,10 @@ body * {
     height: 50px;
     /* visibility: hidden; */
     background-color: lightpink;
+}
+
+.update-current-values {
+    width: 100px;
+    margin-top: 50px;
+    grid-column-start: 2;
 }
