@@ -79,6 +79,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// save stock data to db here
+	log.Println("	saving stock data from alpha vantage")
 	database.SaveStockData(stock, stockDataBytes)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(stockDataBytes)

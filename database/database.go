@@ -6,13 +6,17 @@ package database
 
 import (
 	"errors"
+	"log"
 	"strings"
 	"time"
 
 	"github.com/jinzhu/gorm"
 )
 
-var gormDB *gorm.DB
+var (
+	gormDB           *gorm.DB
+	deletionInterval time.Duration
+)
 
 type Search struct {
 	SearchTime time.Time
@@ -20,8 +24,9 @@ type Search struct {
 }
 
 type stockData struct {
-	Stock string `gorm:"primary_key"`
-	Data  string
+	Stock          string `gorm:"primary_key"`
+	Data           string
+	ExpirationTime time.Time
 }
 
 // Connects the database
@@ -31,6 +36,7 @@ func SetupDatabase() error {
 		return errConnect
 	}
 
+	deletionInterval = time.Second * 10
 	db.Exec("delete from searches;delete from stock_data;")
 
 	// create table for searches
@@ -38,7 +44,21 @@ func SetupDatabase() error {
 	db.AutoMigrate(&stockData{})
 
 	gormDB = db
+	go deleteExpiredData()
 	return nil
+}
+
+func deleteExpiredData() {
+	for {
+		time.Sleep(time.Second * 1)
+		log.Println("checking expired data...")
+		var expiredOnes []stockData
+		gormDB.Where("expiration_time < ?", time.Now()).Find(&expiredOnes)
+		for _, expiredOne := range expiredOnes {
+			log.Printf("%s expired at %s, deleting\n", expiredOne.Stock, expiredOne.ExpirationTime)
+			gormDB.Delete(&expiredOne)
+		}
+	}
 }
 
 func IsStockCached(stock string) bool {
@@ -59,8 +79,9 @@ func GetCachedStockData(stock string) []byte {
 func SaveStockData(stock string, stockDataBytes []byte) {
 	stock = strings.ToUpper(stock)
 	stockData := stockData{
-		Stock: stock,
-		Data:  string(stockDataBytes),
+		Stock:          stock,
+		Data:           string(stockDataBytes),
+		ExpirationTime: time.Now().Add(deletionInterval),
 	}
 	gormDB.Save(&stockData)
 }
