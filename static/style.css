@@ -50,8 +50,14 @@ p {
     grid-column-start: 2;
 }
 
-.tbody * {
-    border: 1px solid lightgray;
+table {
+    margin-top: 20px;
+    width: 100%;
+}
+
+tbody * {
+    color: rgb(133, 133, 133);
+    border: 1px solid rgb(228, 228, 228);
 }
 
 .update-current-values {

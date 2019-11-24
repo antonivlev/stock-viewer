@@ -4,8 +4,10 @@ document.querySelector(".update-current-values").onclick = () => {
     updateCurrentStockValues();
 }
 
-document.querySelector("#send-symbol").onclick = () => {
+let button = document.querySelector("#send-symbol");
+button.onclick = () => {
     let stock = document.querySelector("#symbol-input").value
+    button.innerText = "Loading..."
 
     fetch("http://localhost:3000/api/get-stock-data?symbol=" + stock)
         .then(res => {
@@ -16,11 +18,18 @@ document.querySelector("#send-symbol").onclick = () => {
                         plotData(jsonData);
                         let now = new Date().toJSON();
                         saveSearch(now, stock).then(updateSearchTable);
+                        button.innerText = "See graph"
                     })
-                    .catch(jsonError => showError("json parse error getting stock data: \n" + jsonError));
+                    .catch(jsonError => {
+                        button.innerText = "See graph";
+                        showError("json parse error getting stock data: \n" + jsonError);
+                    });
             } else {
                 // server returned error
-                res.text().then(parsedText => showError(parsedText))
+                res.text().then(parsedText => {
+                    button.innerText = "See graph";
+                    showError(parsedText);
+                })
             }
         })
 }
@@ -157,5 +166,5 @@ function showError(errorString) {
     errorDiv.innerText = errorString;
     setTimeout(() => {
         errorDiv.classList.remove("show-error");
-    }, 2000);
+    }, 3000);
 }
