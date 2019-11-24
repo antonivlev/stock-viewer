@@ -37,9 +37,20 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 		apihelpers.WriteError(w, "No stock symbol supplied", nil)
 		return
 	}
+	stock := keys[0]
+
+	// check cache
+	if database.IsStockCached(stock) {
+		log.Println("	getting stock data from cache")
+		stockDataBytes := database.GetCachedStockData(stock)
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(stockDataBytes)
+		return
+	}
+	log.Println("	fetching stock data from alpha vantage")
 
 	// make request to alpha vantage
-	resp, errGet := http.Get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + keys[0] + "&apikey=88ABYOD45M3WPBO4")
+	resp, errGet := http.Get("https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=" + stock + "&apikey=88ABYOD45M3WPBO4")
 	if errGet != nil {
 		apihelpers.WriteError(w, "Error accessing alpha vantage api", errGet)
 		return
@@ -68,8 +79,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// save stock data to db here
-	//
-	//
+	database.SaveStockData(stock, stockDataBytes)
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(stockDataBytes)
 }
@@ -77,6 +87,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 func saveSearch(w http.ResponseWriter, r *http.Request) {
 	log.Println(r.URL.String())
 
+	// TODO: database.Search should probably be private
 	var search database.Search
 	errDecode := json.NewDecoder(r.Body).Decode(&search)
 	// if could not parse response
