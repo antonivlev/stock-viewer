@@ -1,0 +1,7 @@
+{
+    "hostname": "localhost",
+    "port": "54320",
+    "user": "postgres",
+    "dbname": "stockapp",
+    "cacheExpirationInterval": "600"
+}

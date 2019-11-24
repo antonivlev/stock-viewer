@@ -5,8 +5,11 @@ TODO: add tests
 package database
 
 import (
+	"encoding/json"
 	"errors"
+	"io/ioutil"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -30,18 +33,39 @@ type stockData struct {
 }
 
 // Connects the database
-func SetupDatabase() error {
-	db, errConnect := gorm.Open("postgres", "host=localhost port=5432 user=postgres dbname=stockapp password=12345 sslmode=disable")
+func SetupDatabase(configFile string) error {
+	var config map[string]string
+	configBytes, errConfigRead := ioutil.ReadFile(configFile)
+	if errConfigRead != nil {
+		return errConfigRead
+	}
+	errParseConfig := json.Unmarshal(configBytes, &config)
+	if errParseConfig != nil {
+		return errParseConfig
+	}
+
+	// connect to db
+	db, errConnect := gorm.Open("postgres",
+		"host="+config["hostname"]+
+			" port="+config["port"]+
+			" user="+config["user"]+
+			" dbname="+config["dbname"]+
+			" sslmode=disable",
+	)
 	if errConnect != nil {
 		return errConnect
 	}
 
-	deletionInterval = time.Second * 10
-	db.Exec("delete from searches;delete from stock_data;")
+	numSeconds, errParseInterval := strconv.Atoi(config["cacheExpirationInterval"])
+	if errParseInterval != nil {
+		return errParseInterval
+	}
+	deletionInterval = time.Second * time.Duration(numSeconds)
 
 	// create table for searches
 	db.AutoMigrate(&Search{})
 	db.AutoMigrate(&stockData{})
+	db.Exec("delete from searches;delete from stock_data;")
 
 	gormDB = db
 	go deleteExpiredData()
@@ -50,7 +74,7 @@ func SetupDatabase() error {
 
 func deleteExpiredData() {
 	for {
-		time.Sleep(time.Second * 1)
+		time.Sleep(time.Second * 10)
 		log.Println("checking expired data...")
 		var expiredOnes []stockData
 		gormDB.Where("expiration_time < ?", time.Now()).Find(&expiredOnes)

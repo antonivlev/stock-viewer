@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	errDb := database.SetupDatabase()
+	errDb := database.SetupDatabase("config.json")
 	if errDb != nil {
 		fmt.Printf("Error connecting to database: \n%s\n", errDb.Error())
 	}
