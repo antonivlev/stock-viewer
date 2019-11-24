@@ -153,5 +153,9 @@ function plotData(datesMap) {
 
 function showError(errorString) {
     let errorDiv = document.querySelector(".error-msg");
+    errorDiv.classList.add("show-error");
     errorDiv.innerText = errorString;
+    setTimeout(() => {
+        errorDiv.classList.remove("show-error");
+    }, 2000);
 }

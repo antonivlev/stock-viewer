@@ -1,5 +1,5 @@
 body * {
-    border: 1px dotted grey;
+    font-family: 'Lato', sans-serif;
 }
 
 .app {
@@ -11,6 +11,15 @@ body * {
     grid-column-start: 2;
 }
 
+h1 {
+    margin-bottom: 10px;
+}
+
+p {
+    color: lightslategray;
+    margin-top: 0px;
+}
+
 .graph {
     min-height: 400px;
     border: 1px solid black;
@@ -20,15 +29,29 @@ body * {
 }
 
 .error-msg {
-    margin-bottom: 50px;
+    padding: 10px;
+    margin-top: 40px;
+    border-radius: 10px;
+    margin-bottom: 40px;
     grid-column-start: 2;
-    height: 50px;
-    background-color: lightpink;
+    height: 100px;
+    background-color: lightgrey;
+    color: lightgrey;
+    transition: all 0.5s ease-out;
+}
+
+.show-error {
+    background-color: rgb(255, 215, 221);
+    color: darkred;
 }
 
 .successful-searches {
     margin-top: 50px;
     grid-column-start: 2;
+}
+
+.tbody * {
+    border: 1px solid lightgray;
 }
 
 .update-current-values {
