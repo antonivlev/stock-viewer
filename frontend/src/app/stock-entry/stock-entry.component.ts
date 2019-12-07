@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
 
 @Component({
   selector: 'app-stock-entry',
@@ -6,10 +6,14 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./stock-entry.component.css']
 })
 export class StockEntryComponent implements OnInit {
+  @Input() currentSearch: string;
 
-  constructor() { }
-
-  ngOnInit() {
+  getSearchData() {
+    console.log("fetching search data for: ", this.currentSearch);
+    //this.stockDataService.fetchData(this.currentSearch);
+    // responsibility ends here
+    // service fires event; either "successfult-search" (with data) or "fetch-error" (with error). other components react.
   }
 
+  ngOnInit() {}
 }

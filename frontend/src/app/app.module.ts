@@ -1,16 +1,21 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+// needed for ngModel
+import { FormsModule } from '@angular/forms';
 
 import { AppComponent } from './app.component';
 import { StockEntryComponent } from './stock-entry/stock-entry.component';
+import { ChartComponent } from './chart/chart.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    StockEntryComponent
+    StockEntryComponent,
+    ChartComponent
   ],
   imports: [
-    BrowserModule
+    BrowserModule,
+    FormsModule
   ],
   providers: [],
   bootstrap: [AppComponent]
