@@ -1,0 +1,11 @@
+/* You can add global styles to this file, and also import other style files */
+body * {
+  font-family: 'Lato', sans-serif;
+}
+body {
+  display: grid;
+  grid-template-columns: 20% 1fr 20%;
+}
+app-root {
+  grid-column-start: 2;
+}
