@@ -17,7 +17,14 @@ export class StockEntryComponent implements OnInit {
   getSearchData() : void {
     console.log("app-stock-entry: fetching search data for: ", this.currentSearch);
     this.stockDataService.fetchStockData(this.currentSearch)
-      .then( result => result.ok ? this.newData.emit(result.data) : this.newError.emit(result.data) )    
+      .then(result => {
+        if (result.ok) {
+          this.newData.emit(result.data)
+          this.newError.emit({})
+        } else {
+          this.newError.emit(result.data)
+        }
+      })    
   }
 
   ngOnInit() {}

@@ -11,7 +11,7 @@ export class AppComponent {
   fetchError: string;
 
   fillInError(err) {
-    this.fetchError = err;
+    this.fetchError = JSON.stringify(err);
     console.log("app-root: my child (stock-entry) updated my error");
   }
 
