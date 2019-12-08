@@ -1,4 +1,6 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit, Input, Output } from '@angular/core';
+import { StockDataService } from '../stock-data.service';
+import { EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-stock-entry',
@@ -7,12 +9,15 @@ import { Component, OnInit, Input } from '@angular/core';
 })
 export class StockEntryComponent implements OnInit {
   @Input() currentSearch: string;
+  @Output() newData = new EventEmitter();
+  @Output() newError = new EventEmitter();
 
-  getSearchData() {
-    console.log("fetching search data for: ", this.currentSearch);
-    //this.stockDataService.fetchData(this.currentSearch);
-    // responsibility ends here
-    // service fires event; either "successfult-search" (with data) or "fetch-error" (with error). other components react.
+  constructor(private stockDataService: StockDataService) {}
+
+  getSearchData() : void {
+    console.log("app-stock-entry: fetching search data for: ", this.currentSearch);
+    this.stockDataService.fetchStockData(this.currentSearch)
+      .then( result => result.ok ? this.newData.emit(result.data) : this.newError.emit(result.data) )    
   }
 
   ngOnInit() {}

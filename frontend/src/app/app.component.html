@@ -1,3 +1,3 @@
 <h3>{{title}}</h3>
-<app-stock-entry></app-stock-entry>
-<app-chart></app-chart>
+<app-stock-entry (newData)="drawData($event)" (newError)="fillInError($event)"></app-stock-entry>
+<app-chart [data]="chartData"></app-chart>

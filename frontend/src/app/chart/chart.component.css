@@ -4,3 +4,11 @@ div {
   background-color: rgb(227, 227, 227);
   border-radius: 5px;
 }
+
+.graph {
+  min-height: 400px;
+  border: 1px solid black;
+  /* width: 500px; */
+  justify-self: stretch;
+  grid-column-start: 2;
+}
