@@ -30,6 +30,7 @@ func main() {
 }
 
 func getStockData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.URL.String())
 	// parse stock symbol
 	keys, ok := r.URL.Query()["symbol"]
@@ -86,6 +87,7 @@ func getStockData(w http.ResponseWriter, r *http.Request) {
 }
 
 func saveSearch(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.URL.String())
 
 	// TODO: database.Search should probably be private
@@ -104,6 +106,7 @@ func saveSearch(w http.ResponseWriter, r *http.Request) {
 }
 
 func getSearches(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.URL.String())
 
 	searches, errRead := database.GetSearches()
@@ -124,6 +127,7 @@ func getSearches(w http.ResponseWriter, r *http.Request) {
 // Error handling thought: this function will only be called with a correct "symbol" parameter; because it is called programmatically
 // from the successful searches table. No need to handle bad parameter? Can this guarantee be explicit?
 func getLatestStockData(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	log.Println(r.URL.String())
 	// parse stock symbol
 	keys, ok := r.URL.Query()["symbol"]
